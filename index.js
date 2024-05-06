@@ -59,35 +59,29 @@ app.post("/api/login", async (req, res) => {
 
 app.post("/api/register", async (req, res) => {
   // console.log(req.body);
-  const { name, password, level, studentId, email, gender } = req.body;
+  const { name, password, level, email, gender } = req.body;
   // console.log(userData);
   if (!name) return res.status(400).send({ message: "name is missing!" });
 
   if (!password) return res.status(400).send({ message: "password is missing!" });
 
-  if (!studentId) return res.status(400).send({ message: "studentId is missing!" });
-
   if (!email) return res.status(400).send({ message: "email is missing!" });
-
-  if (!level) return res.status(400).send({ message: "level is missing!" });
-
   // try {
 
   const existingUser = await db.user.findFirst({
     where: {
-      OR: [
-        { email },
-        { studentId }
-      ],
+      email
     }
   });
 
   if (existingUser) {
-    res.status(403).json({ message: "Email or Student ID already in use." });
+    res.status(403).json({ message: "email already in use." });
     return;
   }
+try {
+  
 
-  const user = await db.user.create({ data: { name, level, studentId, email, password, gender } });
+  const user = await db.user.create({ data: { name, level, email, password, gender } });
 
   jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn: "7d" }, (err, token) => {
     if (err) throw err;
@@ -96,8 +90,11 @@ app.post("/api/register", async (req, res) => {
 
   })
 
+} catch (error) {
+  res.status(500).json(error)
 }
-)
+
+});
 
 app.get("/api/active_user", verifyToken, (req, res) => {
 
@@ -164,7 +161,6 @@ app.patch("/api/users/:userId", verifyToken, async (req, res) => {
     name,
     email,
     password,
-    studentId,
     level,
     gender,
     role
@@ -173,8 +169,6 @@ app.patch("/api/users/:userId", verifyToken, async (req, res) => {
   if (isNaN(level)) {
     res.status(400).json({ message: "Level must be a number." });
   }
-
-  let avatar;
 
   try {
 
@@ -188,40 +182,14 @@ app.patch("/api/users/:userId", verifyToken, async (req, res) => {
       res.status(404).json({ message: "user not found" });
     }
 
-    if (req.files?.avatar) {
-
-      if (Array.isArray(req.files?.avatar)) {
-        res.status(400).json({ message: "avatar must be a single image" });
-      }
-
-      const avatarFile = req.files?.avatar;
-
-      if (avatarFile.mimetype.split('/')[0] !== "image") {
-        res.status(406).json({ message: "avatar must be an image" });
-      }
-      try {
-        if (existingUser.avatar) {
-          fs.unlinkSync('./uploads' + existingUser.avatar);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-      //Use the mv() method to place the file in the upload directory (i.e. "uploads")
-      avatarFile.mv(`./uploads/users/${userId}/` + avatarFile.name);
-      avatar = `/users/${userId}/${avatarFile.name}`.replaceAll(` `, "%20");
-      // console.log(avatar);
-    }
-
     const updatedUser = await db.user.update({
       where: { id: userId },
       data: {
         name,
         email,
         password,
-        studentId,
         level: parseInt(level),
         gender,
-        avatar
       }, include: {
         favoriteStores: true
       }

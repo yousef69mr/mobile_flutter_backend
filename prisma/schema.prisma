@@ -23,12 +23,10 @@ model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   // id        Int      @id @default(autoincrement())
   name      String
-  email     String?  @unique
-  password  String?
-  avatar    String?
-  level     Int
+  email     String  @unique
+  password  String 
+  level     Int?
   gender    String?
-  studentId String
   role      UserRole @default(USER)
 
   favoriteStores FavoriteStore[]
