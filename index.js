@@ -44,7 +44,7 @@ app.listen(PORT, () => {
 });
 
 
-export default app;
+// export default app;
 // module.exports = app;
 
 //app.listen(8080, () => console.log('Server has started on port 8080'))
