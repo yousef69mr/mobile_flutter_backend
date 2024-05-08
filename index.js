@@ -5,7 +5,10 @@ import { PrismaClient } from '@prisma/client'
 import fileUpload from 'express-fileupload';
 import userRouter from './api/users/user.controller.js'
 import authRouter from './api/auth/auth.controller.js'
+import productRouter from './api/products/product.controller.js'
 import favoriteStoresRouter from './api/favorite_stores/favorite_store.controller.js'
+import productStoresRouter from './api/product_stores/product_store.controller.js'
+
 import storeRouter from './api/stores/store.controller.js'
 
 const db = globalThis.prisma || new PrismaClient();
@@ -34,7 +37,9 @@ app.use(express.json({ limit: "50mb" }));
 app.use('/api/auth', authRouter)
 app.use('/api/users', userRouter);
 app.use('/api/stores', storeRouter);
+app.use('/api/products', productRouter);
 app.use('/api/favorite_stores', favoriteStoresRouter);
+app.use('/api/product_stores', productStoresRouter);
 
 
 app.get("/", (req, res) => res.send("Express on Vercel"));

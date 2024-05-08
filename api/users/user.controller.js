@@ -1,7 +1,9 @@
 import express from 'express';
 import * as fs from 'fs';
 import { UserRole } from '@prisma/client'
+import { db } from '../../lib/database.js';
 import { verifyToken } from '../../lib/auth.js'
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
@@ -90,7 +92,8 @@ router.patch("/:userId", verifyToken, async (req, res) => {
                 studentId,
                 level: parseInt(level),
                 gender,
-                avatar
+                avatar,
+                role
             }, include: {
                 favoriteStores: true
             }

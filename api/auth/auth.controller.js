@@ -1,5 +1,6 @@
 import express from 'express';
 import { verifyToken } from '../../lib/auth.js'
+import { db } from '../../lib/database.js';
 import jwt from "jsonwebtoken";
 
 

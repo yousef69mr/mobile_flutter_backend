@@ -1,6 +1,8 @@
 import express from 'express';
 import { UserRole } from '@prisma/client'
+import { db } from '../../lib/database.js';
 import { verifyToken } from '../../lib/auth.js'
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
@@ -8,16 +10,23 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
 
-  const { type } = req.query; // Get the "type" parameter from the query string
+  // const { type } = req.query; // Get the "type" parameter from the query string
 
-  let filter = {};
-  if (type) {
-    filter.type = type; // Add the "type" filter if provided
-  }
+  // let filter = {};
+  // if (type) {
+  //   filter.type = type; // Add the "type" filter if provided
+  // }
   try {
     const products = await db.product.findMany({
-      where: filter,
+      // where: filter,
       include: {
+
+        stores: {
+          include: {
+            store: true
+          }
+        }
+
         // users: true
       }
     });
@@ -50,25 +59,30 @@ router.post("/", verifyToken, async (req, res) => {
     res.status(400).json({ message: "name is missing" });
   }
 
-  if (!price) {
-    res.status(400).json({ message: "price is missing" });
-  }
+  // if (!price) {
+  //   res.status(400).json({ message: "price is missing" });
+  // }
 
-  if (!storeId) {
-    res.status(400).json({ message: "storeId is missing" });
-  }
+  // if (!storeId) {
+  //   res.status(400).json({ message: "storeId is missing" });
+  // }
 
   try {
     const newProduct = await db.product.create({
       data: {
         name,
-        price,
-        stores: {
-          connect: { id: storeId }
+        stores: storeId && {
+          create: [{ connect: { id: storeId, price: price ?? 0 } }]
         },
-
+      }, include: {
+        stores: {
+          include: {
+            store: true
+          }
+        }
       }
-    });
+    })
+
     res.status(201).json(newProduct);
   } catch (error) {
     console.log("Error in /api/products POST route: ", error);
@@ -97,7 +111,6 @@ router.patch("/:productId", verifyToken, async (req, res) => {
 
   const {
     name,
-    price
   } = req.body;
 
   if (!name) {
@@ -112,7 +125,6 @@ router.patch("/:productId", verifyToken, async (req, res) => {
     const existingProduct = await db.product.findUnique({
       where: {
         id: productId,
-
       }
     });
     if (!existingProduct) {
@@ -123,8 +135,14 @@ router.patch("/:productId", verifyToken, async (req, res) => {
       where: { id: productId },
       data: {
         name,
-        price
       },
+      include: {
+        stores: {
+          include: {
+            store: true
+          }
+        }
+      }
     });
     res.status(200).json(product);
   } catch (error) {

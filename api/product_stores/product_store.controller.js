@@ -1,5 +1,4 @@
 import express from 'express';
-import { UserRole } from '@prisma/client'
 import { db } from '../../lib/database.js';
 import { verifyToken } from '../../lib/auth.js'
 import jwt from "jsonwebtoken";
@@ -19,19 +18,8 @@ router.get("/", verifyToken, async (req, res) => {
 
 
   try {
-    let favoriteStores;
-
-    if (existingUser.role !== UserRole.ADMIN) {
-      favoriteStores = await db.favoriteStore.findMany({
-        where: {
-          userId: existingUser.id
-        }
-      });
-      return res.status(200).json(favoriteStores);
-    }
-
-    favoriteStores = await db.favoriteStore.findMany();
-    res.status(200).json(favoriteStores);
+    const productStores = await db.storeProduct.findMany();
+    res.status(200).json(productStores);
   } catch (error) {
     console.log("Error getting store to favorites: ", error);
     res.status(500).json(error);
@@ -63,18 +51,18 @@ router.post("/", verifyToken, async (req, res) => {
   try {
 
     // check to see if the user already has this store in their favorite list
-    const existingFavorites = await db.favoriteStore.findFirst({
+    const existingProducts = await db.storeProduct.findFirst({
       where: {
         userId,
         storeId
       }
     });
 
-    if (existingFavorites) {
-      return res.status(406).json({ message: "This store is already on your favorites list." });
+    if (existingProducts) {
+      return res.status(406).json({ message: "This product is already on your store list." });
     }
 
-    const newFavorite = await db.favoriteStore.create({
+    const newFavorite = await db.storeProduct.create({
       data: {
         userId,
         storeId
@@ -90,8 +78,8 @@ router.post("/", verifyToken, async (req, res) => {
 
 })
 
-router.delete("/:favoriteStoreId", verifyToken, async (req, res) => {
-  const favoriteStoreId = req.params.favoriteStoreId;
+router.delete("/:productStoreId", verifyToken, async (req, res) => {
+  const productStoreId = req.params.productStoreId;
   const decodedToken = jwt.verify(req.token, process.env.JWT_SECRET);
   const { user } = decodedToken;
 
@@ -100,7 +88,7 @@ router.delete("/:favoriteStoreId", verifyToken, async (req, res) => {
   }
 
   try {
-    const foundFavorite = await db.favoriteStore.delete({ where: { id: favoriteStoreId } });
+    const foundFavorite = await db.storeProduct.delete({ where: { id: productStoreId } });
 
     if (!foundFavorite) {
       return res.status(404).json({ message: "Could not find favorite with given id" });

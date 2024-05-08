@@ -20,14 +20,14 @@ enum UserRole {
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
   // id        Int      @id @default(autoincrement())
-  name      String
-  email     String  @unique
-  password  String 
-  level     Int?
-  gender    String?
-  role      UserRole @default(USER)
+  name     String
+  email    String   @unique
+  password String
+  level    Int?
+  gender   String?
+  role     UserRole @default(USER)
 
   favoriteStores FavoriteStore[]
 
@@ -77,6 +77,8 @@ model Store {
 model StoreProduct {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
+  price Float
+
   productId String  @db.ObjectId
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
@@ -92,10 +94,9 @@ model StoreProduct {
 }
 
 model Product {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
   // id        Int      @id @default(autoincrement())
-  name  String
-  price Float
+  name String
 
   stores StoreProduct[]
 
