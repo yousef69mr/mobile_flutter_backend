@@ -75,6 +75,34 @@ router.get("/", async (req, res) => {
     }
   })
   
+  router.get("/:storeId", async (req, res) => {
+
+    const storeId = req.params.storeId;
+  
+    if (!storeId) {
+      res.status(400).json({ message: "storeId is missing" });
+    }
+  
+    try {
+
+      const store = await db.store.findUnique({
+        where: { id: storeId },
+        include:{
+          
+        }
+      });
+
+      if (!store) {
+        res.status(404).json({ message: "store not found" });
+      }
+
+      res.status(200).json(store);
+    } catch (error) {
+      console.log("Error in /api/stores/:storeId GET route: ", error);
+      res.status(500).json({ message: "Server Error" });
+    }
+  })
+
   router.patch("/:storeId", verifyToken, async (req, res) => {
     const decodedToken = jwt.verify(req.token, process.env.JWT_SECRET);
     const { user } = decodedToken;

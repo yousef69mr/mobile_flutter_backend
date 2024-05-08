@@ -97,7 +97,7 @@ model Product {
   name  String
   price Float
 
-  users StoreProduct[]
+  stores StoreProduct[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())

@@ -34,13 +34,11 @@ router.post("/login", async (req, res) => {
 
 router.post("/register", async (req, res) => {
     // console.log(req.body);
-    const { name, password, level, studentId, email, gender } = req.body;
+    const { name, password, level, email, gender } = req.body;
     // console.log(userData);
     if (!name) return res.status(400).send({ message: "name is missing!" });
 
     if (!password) return res.status(400).send({ message: "password is missing!" });
-
-    if (!studentId) return res.status(400).send({ message: "studentId is missing!" });
 
     if (!email) return res.status(400).send({ message: "email is missing!" });
 
@@ -50,19 +48,16 @@ router.post("/register", async (req, res) => {
 
     const existingUser = await db.user.findFirst({
         where: {
-            OR: [
-                { email },
-                { studentId }
-            ],
+            email
         }
     });
 
     if (existingUser) {
-        res.status(403).json({ message: "Email or Student ID already in use." });
+        res.status(403).json({ message: "email already in use." });
         return;
     }
 
-    const user = await db.user.create({ data: { name, level, studentId, email, password, gender } });
+    const user = await db.user.create({ data: { name, level, email, password, gender } });
 
     jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn: "7d" }, (err, token) => {
         if (err) throw err;
