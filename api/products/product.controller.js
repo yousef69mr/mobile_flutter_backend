@@ -71,9 +71,7 @@ router.post("/", verifyToken, async (req, res) => {
     const newProduct = await db.product.create({
       data: {
         name,
-        stores: storeId && {
-          create: [{ connect: { id: storeId, price: price ?? 0 } }]
-        },
+
       }, include: {
         stores: {
           include: {
@@ -147,6 +145,47 @@ router.patch("/:productId", verifyToken, async (req, res) => {
     res.status(200).json(product);
   } catch (error) {
     console.log("Error in /api/products/:productId PATCH route: ", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+})
+
+
+router.delete("/:productId", verifyToken, async (req, res) => {
+  const decodedToken = jwt.verify(req.token, process.env.JWT_SECRET);
+  const { user } = decodedToken;
+
+  const existingUser = await db.user.findUnique({ where: { id: user.id } });
+  if (!existingUser) {
+    return res.status(403).json({ message: "You are not authorized to make this request" });
+  }
+
+  if (existingUser.role !== UserRole.ADMIN) {
+    res.status(401).json({ message: "unauthorized!" });
+  }
+
+  const productId = req.params.productId;
+
+  if (!productId) {
+    res.status(400).json({ message: "productId is missing" });
+  }
+
+  try {
+    const existingProduct = await db.product.findUnique({
+      where: {
+        id: productId,
+      }
+    });
+    if (!existingProduct) {
+      res.status(404).json({ message: "product not found" });
+    }
+
+    const product = await db.product.delete({
+      where: { id: productId },
+
+    });
+    res.status(204).json(product);
+  } catch (error) {
+    console.log("Error in /api/products/:productId DELETE route: ", error);
     res.status(500).json({ message: "Server Error" });
   }
 })
