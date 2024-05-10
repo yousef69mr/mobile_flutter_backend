@@ -51,8 +51,8 @@ router.post("/", verifyToken, async (req, res) => {
 
   const {
     name,
-    price,
-    storeId
+    // price,
+    // storeId
   } = req.body;
 
   if (!name) {

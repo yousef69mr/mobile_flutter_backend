@@ -158,13 +158,13 @@ router.patch("/:storeId", verifyToken, async (req, res) => {
     latitude
   } = req.body;
 
-  if (!name) {
-    res.status(400).json({ message: "name is missing" });
-  }
+  // if (!name) {
+  //   res.status(400).json({ message: "name is missing" });
+  // }
 
-  if (!latitude || !longitude) {
-    res.status(400).json({ message: "coordinates are missing" });
-  }
+  // if (!latitude || !longitude) {
+  //   res.status(400).json({ message: "coordinates are missing" });
+  // }
 
   try {
     const existingStore = await db.store.findUnique({
