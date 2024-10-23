@@ -2,6 +2,7 @@ import express from 'express';
 import { verifyToken } from '../../lib/auth.js'
 import { db } from '../../lib/database.js';
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 
 const router = express.Router();
@@ -15,9 +16,14 @@ router.post("/login", async (req, res) => {
     // try {
 
 
-    const user = await db.user.findUnique({ where: { email, password } });
+
+    const user = await db.user.findUnique({ where: { email } });
 
     if (!user) return res.status(404).json({ message: "User not found." });
+
+    const passwordsMatch = bcrypt.compare(password, user.password);
+
+    if (!passwordsMatch) return res.status(403).json({ message: "Invaild credintials" });
 
     jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn: "7d" }, (err, token) => {
         if (err) throw err;
@@ -58,7 +64,11 @@ router.post("/register", async (req, res) => {
         return;
     }
 
-    const user = await db.user.create({ data: { name, level, email, password, gender } });
+    const salt = 10;
+
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = await db.user.create({ data: { name, level, email, password: hashedPassword, gender } });
 
     jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn: "7d" }, (err, token) => {
         if (err) throw err;
