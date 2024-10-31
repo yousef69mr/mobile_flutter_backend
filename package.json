@@ -12,7 +12,7 @@
   "engines": {
     "node": "20.x"
   },
-  "author": "yousef_shemy",
+  "author": "yousef shemy",
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.13.0",
